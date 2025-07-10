@@ -11,11 +11,25 @@ export type ProcessingStep = 'idle' | 'thinking' | 'output-ready' | 'processing-
 
 interface ChatInterfaceProps {
   requestId?: string;
+  hasRequests: boolean;
   onStepChange: (step: ProcessingStep) => void;
+  onCreateRequest: () => void;
   currentStep: ProcessingStep;
+  intermediateOutput?: {
+    content: string;
+    fileName: string;
+    fileType: 'text' | 'markdown';
+  };
 }
 
-export const ChatInterface = ({ requestId, onStepChange, currentStep }: ChatInterfaceProps) => {
+export const ChatInterface = ({ 
+  requestId, 
+  hasRequests, 
+  onStepChange, 
+  onCreateRequest, 
+  currentStep,
+  intermediateOutput 
+}: ChatInterfaceProps) => {
   const [input, setInput] = useState("");
   const [isThinkingExpanded, setIsThinkingExpanded] = useState(false);
   const [thinkingText, setThinkingText] = useState("");
@@ -164,32 +178,51 @@ This markdown file contains the structured output from the second processing sta
       </div>
 
       <div className="flex-1 p-6 space-y-6 overflow-auto">
-        {/* Input Section */}
-        <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle className="text-lg">Input</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="relative">
-              <Textarea
-                ref={textareaRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Enter your request for the AI agent..."
-                className="min-h-[120px] pr-12 resize-none bg-background border-border focus:ring-primary"
-                disabled={currentStep !== 'idle'}
-              />
-              <Button
-                onClick={handleSubmit}
-                disabled={!input.trim() || !requestId || currentStep !== 'idle'}
-                className="absolute bottom-2 right-2 h-8 w-8 p-0"
-                size="sm"
+        {/* Input Section or Create Request */}
+        {!hasRequests || !requestId ? (
+          <Card className="shadow-card">
+            <CardHeader>
+              <CardTitle className="text-lg">Get Started</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 text-center">
+              <p className="text-muted-foreground">
+                Create a new request to begin working with the AI agent.
+              </p>
+              <Button 
+                onClick={onCreateRequest}
+                className="bg-gradient-primary hover:opacity-90"
               >
-                <Send className="h-4 w-4" />
+                Create New Request
               </Button>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="shadow-card">
+            <CardHeader>
+              <CardTitle className="text-lg">Input</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="relative">
+                <Textarea
+                  ref={textareaRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Enter your request for the AI agent..."
+                  className="min-h-[120px] pr-12 resize-none bg-background border-border focus:ring-primary"
+                  disabled={currentStep !== 'idle'}
+                />
+                <Button
+                  onClick={handleSubmit}
+                  disabled={!input.trim() || !requestId || currentStep !== 'idle'}
+                  className="absolute bottom-2 right-2 h-8 w-8 p-0"
+                  size="sm"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Thinking Section */}
         {currentStep !== 'idle' && (
@@ -266,6 +299,39 @@ This markdown file contains the structured output from the second processing sta
                   <ArrowRight className="h-4 w-4" />
                   Proceed
                 </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Intermediate Output Section - Always visible once created */}
+        {intermediateOutput && (
+          <Card className="shadow-card">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-primary" />
+                Intermediate Output
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
+                <span className="font-mono text-sm">{intermediateOutput.fileName}</span>
+                <div className="ml-auto flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePreview(intermediateOutput.content)}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDownload(intermediateOutput.fileName, intermediateOutput.content)}
+                  >
+                    <Download className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

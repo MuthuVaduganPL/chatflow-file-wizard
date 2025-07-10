@@ -54,12 +54,7 @@ export const RequestsList = ({ namespace, selectedRequestId, onRequestSelect }: 
 
   return (
     <div className="h-full flex flex-col">
-      <div className="p-4 border-b border-border">
-        <h2 className="text-lg font-semibold text-foreground">Requests</h2>
-        <p className="text-sm text-muted-foreground">Namespace: {namespace}</p>
-      </div>
-      
-      <div className="flex-1 overflow-auto p-4 space-y-3">
+      <div className="p-2 space-y-3">
         {currentRequests.map((request) => (
           <Card 
             key={request.id}
@@ -95,7 +90,7 @@ export const RequestsList = ({ namespace, selectedRequestId, onRequestSelect }: 
       </div>
 
       {/* Pagination */}
-      <div className="p-4 border-t border-border flex items-center justify-between">
+      <div className="p-2 border-t border-border flex items-center justify-between">
         <span className="text-sm text-muted-foreground">
           Page {currentPage} of {totalPages}
         </span>
